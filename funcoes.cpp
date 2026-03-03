@@ -93,7 +93,6 @@ void remover_pokemon()
 void listar_pokemon_nome()
 {
 	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
-	menu();
 }
 
 void listar_pokemon_tipo()
