@@ -65,6 +65,233 @@ int dijkstra_centro_proximo(list<aresta> grafo[], int vertices, int origem, int 
 
 }
 
+void cadastro_cidade()
+{
+	int n;
+
+	cout << "Quantas cidades deseja cadastrar?" << endl;	
+
+	cin >> n;
+
+	for(int i = 0; i < n; i++)
+	{
+		cidade c;
+
+		cout << "Digite o nome da cidade: " << endl;
+		getline(cin >> ws, c.nome);
+
+		cout << "Digite o codigo da cidade: " << endl;
+		cin >> c.codigo;
+
+		cout << "A cidade possui um centro Pokemon? (1 para sim, 0 para nao)" << endl;
+		cin >> c.possui_centro;
+
+		cidades.push_back(c);
+	}
+
+	cout << "Cidades cadastradas" << endl;
+	vector<cidade>::iterator it;
+
+	for(it = cidades.begin(); it != cidades.end(); it++)
+	{
+		cout << "Nome: " << (*it).nome << "| Codigo: " << (*it).codigo << "| Possui centro Pokemon: " << (*it).possui_centro << endl;
+	}
+}
+
+void cadastro_estrada()
+{
+	if(cidades.empty())
+	{
+		cout << "Nenhuma cidade cadastrada, cadastre cidades primeiro" << endl;
+		return;
+	}
+
+	for(int i = 0; i < cidades.size(); i++)
+	{
+		int quant_adjacentes;
+		cout << "Para a cidade " << cidades[i].nome << " (codigo " << cidades[i].codigo << "), digite o numero de cidades adjacentes: " << endl;
+		cin >> quant_adjacentes;
+
+		for(int j = 0; j < quant_adjacentes; j++)
+		{
+			int codigo_adjacente;
+			int peso;
+
+			cout << "Digite o codigo da cidade adjacente: " << endl;
+			cin >> codigo_adjacente;
+
+			cout << "Digite o peso da estrada para a cidade adjacente: " << endl;
+			cin >> peso;
+
+			aresta a;
+			a.destino = codigo_adjacente;
+			a.peso = peso;
+			a.origem = cidades[i].codigo;
+			cidades[i].adjacentes.push_back(a);
+		}
+	}
+
+	grafo.clear();
+	grafo.resize(cidades.size());
+
+	for(int i = 0; i < cidades.size(); i++)
+	{
+		list<aresta>::iterator it_adj;
+		for(it_adj = cidades[i].adjacentes.begin(); it_adj != cidades[i].adjacentes.end(); it_adj++)
+		{
+			int dest_index = -1;
+			for(int k = 0; k < cidades.size(); k++)
+			{
+				if(cidades[k].codigo == it_adj->destino)
+				{
+					dest_index = k;
+					break;
+				}
+			}
+			if(dest_index != -1)
+			{
+				aresta a;
+				a.destino = dest_index;
+				a.peso = it_adj->peso;
+				a.origem = cidades[i].codigo;
+
+				bool existe = false;
+				list<aresta>::iterator it;
+				for(it = grafo[i].begin(); it != grafo[i].end(); it++)
+				{
+					if (it->destino == a.destino)
+					{
+						existe = true;
+						break;
+					}
+				}
+				if(!existe)
+				{
+					grafo[i].push_back(a);
+				}
+			}
+		}
+	}
+
+	cout << "Estradas cadastradas" << endl;
+}
+
+void buscar_centro_proximo()
+{
+	vector<bool> visitado(cidades.size(), false);
+	vector<int> anterior(cidades.size(), -1);
+	list<int> fila;
+	int centro_encontrado = -1;
+	int indice_atual = -1;
+	int atual;
+
+	if(cidades.empty())
+	{
+		cout << "Nenhuma cidade cadastrada, retornando ao menu" << endl << endl;
+		return;
+	}
+
+	int codigo_atual;
+	cout << "Digite o codigo da cidade atual: " << endl;
+	cin >> codigo_atual;
+
+	for(int i = 0; i < cidades.size(); i++)
+	{
+		if(cidades[i].codigo == codigo_atual)
+		{
+			indice_atual = i;
+			break;
+		}
+	}
+
+	if(indice_atual == -1)
+	{
+		cout << "Codigo de cidade invalido, retornando ao menu" << endl << endl;
+		return;
+	}
+
+	fila.push_back(indice_atual);
+	visitado[indice_atual] = true;
+
+	while(!fila.empty())
+	{
+		atual = fila.front();
+		fila.pop_front();
+
+		if(cidades[atual].possui_centro)
+		{
+			centro_encontrado = atual;
+			break;
+		}
+
+		list<aresta>::iterator it;
+		for(it = grafo[atual].begin(); it != grafo[atual].end(); it++)
+		{
+			int adj = it->destino;
+
+			if(!visitado[adj])
+			{
+				fila.push_back(adj);
+				visitado[adj] = true;
+				anterior[adj] = atual;
+			}
+		}
+	}
+	
+	if (centro_encontrado == -1)
+	{
+		cout << "Nenhum centro Pokemon encontrado, retornando ao menu" << endl << endl;
+		return;
+	}
+
+	vector<int> caminho;
+	atual = centro_encontrado;
+
+	while(atual != -1)
+	{
+		caminho.push_back(atual);
+		atual = anterior[atual];
+	}
+	
+	cout << "Rota para o centro Pokemon mais proximo: " << endl;
+	for (int i = caminho.size() -1; i >= 0; i--)
+	{
+		cout << cidades[caminho[i]].nome << " (Codigo: " << cidades[caminho[i]].codigo << ")" << endl;
+	}
+
+	cout << endl;
+}
+
+void cadastro_pokemon()
+{
+	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+}
+
+void remover_pokemon()
+{
+	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+}
+
+void listar_pokemon_nome()
+{
+	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+}
+
+void listar_pokemon_tipo()
+{
+	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+}
+
+void contar_pokemon()
+{
+	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+}
+
+void encontrar_pokemon_proximo()
+{
+	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+}
+
 void menu()
 {
 	int op;
@@ -127,240 +354,4 @@ void menu()
 				break;
 		}
 	} while (op != 10);	
-}
-
-void cadastro_cidade()
-{
-	int n;
-
-	cout << "Quantas cidades deseja cadastrar?" << endl;	
-
-	cin >> n;
-
-	for(int i = 0; i < n; i++)
-	{
-		cidade c;
-		int quant_adjacentes; 
-		int codigo_adjacente;
-		int peso;
-
-		cout << "Digite o nome da cidade: " << endl;
-		getline(cin >> ws, c.nome);
-
-		cout << "Digite o codigo da cidade: " << endl;
-		cin >> c.codigo;
-
-		cout << "A cidade possui um centro Pokemon? (1 para sim, 0 para nao)" << endl;
-		cin >> c.possui_centro;
-
-		cout << "Digite o numero de cidades adjacentes: " << endl;
-		cin >> quant_adjacentes;
-
-		for(int j = 0; j < quant_adjacentes; j++)
-		{
-			cout << "Digite o codigo da cidade adjacente: " << endl;
-			cin >> codigo_adjacente;
-
-			cout << "Digite o peso da estrada para a cidade adjacente: " << endl;
-			cin >> peso;
-
-			aresta a;
-			a.destino = codigo_adjacente;
-			a.peso = peso;
-			a.origem = c.codigo;
-			c.adjacentes.push_back(a);
-		}
-
-		cidades.push_back(c);
-	}
-
-	cout << "Cidades cadastradas" << endl;
-	vector<cidade>::iterator it;
-
-	for(it = cidades.begin(); it != cidades.end(); it++)
-	{
-		cout << "Nome: " << (*it).nome << " | Codigo: " << (*it).codigo << " | Possui centro Pokemon: " << (*it).possui_centro << " | Quantidade de cidades adjacentes: " << (*it).adjacentes.size() << endl;
-		if (!(*it).adjacentes.empty())
-		{
-			cout << "  Cidades adjacentes:" << endl;
-			list<aresta>::iterator it_adj;
-			for(it_adj = (*it).adjacentes.begin(); it_adj != (*it).adjacentes.end(); it_adj++)
-			{
-				cout << "    Codigo: " << it_adj->destino << " | Peso da estrada: " << it_adj->peso << endl;
-			}
-		}
-		cout << endl;
-	}
-}
-
-void cadastro_estrada()
-{
-	aresta a;
-	int peso;
-
-	grafo.clear();
-	grafo.resize(cidades.size());
-
-	for(int i = 0; i < cidades.size(); i++)
-	{
-		list<aresta>::iterator it_adj;
-		for(it_adj = cidades[i].adjacentes.begin(); it_adj != cidades[i].adjacentes.end(); it_adj++)
-		{
-			a.destino = it_adj->destino;
-			peso = it_adj->peso;
-			a.peso = peso;
-			a.origem = cidades[i].codigo;
-
-			bool existe = false;
-
-			list<aresta>::iterator it;
-			for(it = grafo[i].begin(); it != grafo[i].end(); it++)
-			{
-				if (it->destino == a.destino)
-				{
-					existe = true;
-					break;
-				}
-			}
-			if(!existe)
-			{
-				grafo[i].push_back(a);
-			}
-		}
-	}
-
-	cout << "Estradas cadastradas" << endl;
-}
-
-void buscar_centro_proximo()
-{
-	
-	vector<bool> visitado(cidades.size(), false);
-	vector<int> anterior(cidades.size(), -1);
-	vector<int> pai(cidades.size(), -1);
-	vector<int> distancia (cidades.size(), INF);
-	list<int> fila;
-	int centro_encontrado = -1;
-	int indice_atual = -1;
-	int atual;
-
-	if(cidades.empty())
-	{
-		cout << "Nenhuma cidade cadastrada, retornando ao menu" << endl << endl;
-		return;
-	}
-
-	int codigo_atual;
-	cout << "Digite o codigo da cidade atual: " << endl;
-	cin >> codigo_atual;
-
-	for(int i = 0; i < cidades.size(); i++)
-	{
-		if(cidades[i].codigo == codigo_atual)
-		{
-			indice_atual = i;
-			break;
-		}
-	}
-
-	if(indice_atual == -1)
-	{
-		cout << "Codigo de cidade invalido, retornando ao menu" << endl << endl;
-		return;
-	}
-
-	distancia[indice_atual] = 0;
-
-	fila.push_back(indice_atual);
-	visitado[indice_atual] = true;
-
-	while(!fila.empty())
-	{
-		atual = fila.front();
-		fila.pop_front();
-
-		if(cidades[atual].possui_centro)
-		{
-			centro_encontrado = atual;
-			break;
-		}
-
-		list<aresta>::iterator it;
-		for(it = grafo[atual].begin(); it != grafo[atual].end(); it++)
-		{
-			int adj = it->destino;
-			int indice_adj = -1;
-
-			for(int k = 0; k < (int)cidades.size();k++)
-			{
-				if(cidades[k].codigo == adj)
-				{
-					indice_adj = k;
-					break;
-				}
-			}
-
-			if(indice_adj != -1 && !visitado[indice_adj])
-			{
-				fila.push_back(indice_adj);
-				visitado[indice_adj] = true;
-				anterior[indice_adj] = atual;
-
-			}
-		}
-	}
-	
-	if (centro_encontrado == -1)
-	{
-		cout << "Nenhum centro Pokemon encontrado, retornando ao menu" << endl << endl;
-		return;
-	}
-
-	vector<int> caminho;
-	atual = centro_encontrado;
-
-	while(atual != -1)
-	{
-		caminho.push_back(atual);
-		atual = anterior[atual];
-	}
-	
-	cout << "Rota para o centro Pokemon mais proximo: " << endl;
-	for (int i = caminho.size() -1; i >= 0; i--)
-	{
-		cout << cidades[caminho[i]].nome << " (Codigo: " << cidades[caminho[i]].codigo << ")" << endl;
-	}
-
-
-	cout << endl;
-}
-
-void cadastro_pokemon()
-{
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
-}
-
-void remover_pokemon()
-{
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
-}
-
-void listar_pokemon_nome()
-{
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
-}
-
-void listar_pokemon_tipo()
-{
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
-}
-
-void contar_pokemon()
-{
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
-}
-
-void encontrar_pokemon_proximo()
-{
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
 }
