@@ -20,7 +20,7 @@ struct cidade
     string nome;
     int codigo;
     bool possui_centro;
-    list<aresta> adjacentes;
+    vector<aresta> adjacentes;
 };
 
 void menu();
