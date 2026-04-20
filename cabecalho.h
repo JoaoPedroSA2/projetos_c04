@@ -4,8 +4,6 @@
 #include <vector>
 #include <list>
 #include <iostream>
-
-
 using namespace std;
 
 struct aresta
