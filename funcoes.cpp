@@ -156,7 +156,6 @@ void buscar_centro_proximo()
 	dijkstra_centro_proximo(cidades, origem);
 	
 }
-
 void cadastro_pokemon()
 {
 	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
