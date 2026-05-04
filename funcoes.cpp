@@ -94,18 +94,20 @@ void cadastro_cidade()
 	cout << "Quantas cidades deseja cadastrar?" << endl;	
 
 	cin >> n;
+	cin.ignore(); // Limpa o '\n' deixado por cin >>
 
 	for(int i = 0; i < n; i++)
 	{
 		cidade c;
 
 		cout << "Digite o nome da cidade: " << endl;
-		getline(cin >> ws, c.nome);
+		getline(cin, c.nome);
 		
 		c.codigo = cidades.size(); 
 		
 		cout << "A cidade possui um centro Pokemon? (1 para sim, 0 para nao)" << endl;
 		cin >> c.possui_centro;
+		cin.ignore(); // Limpa o '\n' deixado por cin >>
 
 		cidades.push_back(c);
 	}
