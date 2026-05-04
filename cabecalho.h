@@ -4,8 +4,6 @@
 #include <vector>
 #include <list>
 #include <iostream>
-
-
 using namespace std;
 
 struct aresta
@@ -20,7 +18,7 @@ struct cidade
     string nome;
     int codigo;
     bool possui_centro;
-    list<aresta> adjacentes;
+    vector<aresta> adjacentes;
 };
 
 void menu();

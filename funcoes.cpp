@@ -2,22 +2,25 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#define INF 999999
 
 vector<cidade> cidades;
 vector<list<aresta> > grafo;
-const int INF = 999999;
 
-int dijkstra_centro_proximo(list<aresta> grafo[], int vertices, int origem, int destino)
+void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 {
-	int pai[vertices];
-	int distancia[vertices];
-	bool visitado[vertices];
-	int atual;
+	int n = cidades.size(); //n vertices
 	
-	list<aresta>::iterator it;
+	int pai[n];
+	int distancia[n];
+	bool visitado[n];
+	int atual;
+	int destino = -1;
+	
+	vector<aresta>::iterator it;
 
 
-	for(int i = 0; i < vertices; i++)
+	for(int i = 0; i < n; i++)
 	{
 		distancia[i] = INF;
 		pai[i] = -1;
@@ -30,13 +33,19 @@ int dijkstra_centro_proximo(list<aresta> grafo[], int vertices, int origem, int 
 
 	while(!visitado[atual])
 	{
-		visitado[atual] = true;	
+		visitado[atual] = true;
+		
+		if(cidades[atual].possui_centro)
+		{
+			destino = atual;
+			break;
+		}
 
-		for(it = grafo[atual].begin(); it != grafo[atual].end(); it++)
+		for(it = cidades[atual].adjacentes.begin(); it != cidades[atual].adjacentes.end(); it++)
 		{
 			int d = it->destino, p = it->peso;
 
-			if(!visitado[d] && distancia[atual] + p < distancia[d])
+			if(!visitado[d] && distancia[atual] != INF && distancia[atual] + p < distancia[d])
 			{
 				distancia[d] = distancia[atual] + p;
 				pai[d] = atual;
@@ -44,7 +53,7 @@ int dijkstra_centro_proximo(list<aresta> grafo[], int vertices, int origem, int 
 		}
 		
 		int menor_distancia = INF;
-		for(int i = 0; i < vertices; i++)
+		for(int i = 0; i < n; i++)
 		{
 			if(!visitado[i] && distancia[i] < menor_distancia)
 			{
@@ -53,16 +62,29 @@ int dijkstra_centro_proximo(list<aresta> grafo[], int vertices, int origem, int 
 			}
 		}
 	}
-
+	   
 	atual = destino;
-	while(atual != origem)
-	{
-		cout << atual + 1 << " <- ";
-		atual = pai[atual];
-	}
-	cout << atual + 1 << endl;
-	return distancia[destino];
 
+	vector<int> caminho;
+
+	while (atual != -1)
+	{
+	    caminho.push_back(atual);
+	    atual = pai[atual];
+	}
+	
+	cout << "Rota:" << endl;
+	
+	// imprime origem -> destino
+	for (int i = (int)caminho.size() - 1; i >= 0; i--)
+	{
+	    cout << cidades[caminho[i]].nome;
+	    if (i != 0) cout << " -> ";
+	}
+	
+	cout << endl;
+	
+	cout << "Distancia total: " << distancia[destino] << endl;
 }
 
 void cadastro_cidade()
@@ -79,10 +101,9 @@ void cadastro_cidade()
 
 		cout << "Digite o nome da cidade: " << endl;
 		getline(cin >> ws, c.nome);
-
-		cout << "Digite o codigo da cidade: " << endl;
-		cin >> c.codigo;
-
+		
+		c.codigo = cidades.size(); 
+		
 		cout << "A cidade possui um centro Pokemon? (1 para sim, 0 para nao)" << endl;
 		cin >> c.possui_centro;
 
@@ -94,7 +115,7 @@ void cadastro_cidade()
 
 	for(it = cidades.begin(); it != cidades.end(); it++)
 	{
-		cout << "Nome: " << (*it).nome << "| Codigo: " << (*it).codigo << "| Possui centro Pokemon: " << (*it).possui_centro << endl;
+		cout << "Cidade: " << it->nome << "| Codigo: " << it->codigo << "| Possui centro Pokemon: " << it->possui_centro << endl;
 	}
 }
 
@@ -106,160 +127,34 @@ void cadastro_estrada()
 		return;
 	}
 
-	for(int i = 0; i < cidades.size(); i++)
+	int origem, destino, peso;
+	
+	cout << "--Cadastro das estradas--" << endl;
+	cout << "Digite: origem, destino, peso (-1, -1, -1 para parar)" << endl;
+	
+	while(cin >> origem >> destino >> peso &&(origem != -1 && destino != -1 && peso != -1))
 	{
-		int quant_adjacentes;
-		cout << "Para a cidade " << cidades[i].nome << " (codigo " << cidades[i].codigo << "), digite o numero de cidades adjacentes: " << endl;
-		cin >> quant_adjacentes;
+		aresta a;
+		a.origem = origem;
+		a.destino = destino;
+		a.peso = peso;
 
-		for(int j = 0; j < quant_adjacentes; j++)
-		{
-			int codigo_adjacente;
-			int peso;
-
-			cout << "Digite o codigo da cidade adjacente: " << endl;
-			cin >> codigo_adjacente;
-
-			cout << "Digite o peso da estrada para a cidade adjacente: " << endl;
-			cin >> peso;
-
-			aresta a;
-			a.destino = codigo_adjacente;
-			a.peso = peso;
-			a.origem = cidades[i].codigo;
-			cidades[i].adjacentes.push_back(a);
-		}
+		cidades[origem].adjacentes.push_back(a);
 	}
-
-	grafo.clear();
-	grafo.resize(cidades.size());
-
-	for(int i = 0; i < cidades.size(); i++)
-	{
-		list<aresta>::iterator it_adj;
-		for(it_adj = cidades[i].adjacentes.begin(); it_adj != cidades[i].adjacentes.end(); it_adj++)
-		{
-			int dest_index = -1;
-			for(int k = 0; k < cidades.size(); k++)
-			{
-				if(cidades[k].codigo == it_adj->destino)
-				{
-					dest_index = k;
-					break;
-				}
-			}
-			if(dest_index != -1)
-			{
-				aresta a;
-				a.destino = dest_index;
-				a.peso = it_adj->peso;
-				a.origem = cidades[i].codigo;
-
-				bool existe = false;
-				list<aresta>::iterator it;
-				for(it = grafo[i].begin(); it != grafo[i].end(); it++)
-				{
-					if (it->destino == a.destino)
-					{
-						existe = true;
-						break;
-					}
-				}
-				if(!existe)
-				{
-					grafo[i].push_back(a);
-				}
-			}
-		}
-	}
-
-	cout << "Estradas cadastradas" << endl;
+	
+	cout << "Cadastro concluido" << endl;  	 
+	
 }
 
 void buscar_centro_proximo()
 {
-	vector<bool> visitado(cidades.size(), false);
-	vector<int> anterior(cidades.size(), -1);
-	list<int> fila;
-	int centro_encontrado = -1;
-	int indice_atual = -1;
-	int atual;
-
-	if(cidades.empty())
-	{
-		cout << "Nenhuma cidade cadastrada, retornando ao menu" << endl << endl;
-		return;
-	}
-
-	int codigo_atual;
-	cout << "Digite o codigo da cidade atual: " << endl;
-	cin >> codigo_atual;
-
-	for(int i = 0; i < cidades.size(); i++)
-	{
-		if(cidades[i].codigo == codigo_atual)
-		{
-			indice_atual = i;
-			break;
-		}
-	}
-
-	if(indice_atual == -1)
-	{
-		cout << "Codigo de cidade invalido, retornando ao menu" << endl << endl;
-		return;
-	}
-
-	fila.push_back(indice_atual);
-	visitado[indice_atual] = true;
-
-	while(!fila.empty())
-	{
-		atual = fila.front();
-		fila.pop_front();
-
-		if(cidades[atual].possui_centro)
-		{
-			centro_encontrado = atual;
-			break;
-		}
-
-		list<aresta>::iterator it;
-		for(it = grafo[atual].begin(); it != grafo[atual].end(); it++)
-		{
-			int adj = it->destino;
-
-			if(!visitado[adj])
-			{
-				fila.push_back(adj);
-				visitado[adj] = true;
-				anterior[adj] = atual;
-			}
-		}
-	}
+	int origem;
 	
-	if (centro_encontrado == -1)
-	{
-		cout << "Nenhum centro Pokemon encontrado, retornando ao menu" << endl << endl;
-		return;
-	}
-
-	vector<int> caminho;
-	atual = centro_encontrado;
-
-	while(atual != -1)
-	{
-		caminho.push_back(atual);
-		atual = anterior[atual];
-	}
+	cout << "Digite o codigo da cidade de origem" << endl;
+	cin >> origem;
 	
-	cout << "Rota para o centro Pokemon mais proximo: " << endl;
-	for (int i = caminho.size() -1; i >= 0; i--)
-	{
-		cout << cidades[caminho[i]].nome << " (Codigo: " << cidades[caminho[i]].codigo << ")" << endl;
-	}
-
-	cout << endl;
+	dijkstra_centro_proximo(cidades, origem);
+	
 }
 
 void cadastro_pokemon()
@@ -292,66 +187,3 @@ void encontrar_pokemon_proximo()
 	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
 }
 
-void menu()
-{
-	int op;
-
-	do{
-		cout << "----POKEDEX----" << endl;
-		cout << "1) Cadastrar cidade" << endl;
-		cout << "2) Cadastrar estrada" << endl;
-		cout << "3) Buscar centro Pokemon mais proximo" << endl;
-		cout << "4) Cadastrar Pokemon" << endl;
-		cout << "5) Remover Pokemon" << endl;
-		cout << "6) Listar Pokemons (ordem alfabetica de nome)" << endl;
-		cout << "7) Lista Pokemons (ordem alfabetica de tipo)" << endl;
-		cout << "8) Contar Pokemons de cada tipo" << endl;
-		cout << "9) Encontrar Pokemons proximos" << endl;
-		cout << "10) Sair" << endl << endl;
-		
-		
-		cout << "Selecione uma opcao" << endl;
-		cin >> op;
-
-		while (op < 1 || op > 10)
-		{
-			cout << "Opcao invalida, digite novamente!" << endl;
-			
-			cin >> op;
-		}	
-		
-		switch (op)
-		{
-			case 1:
-				cadastro_cidade();
-				break;
-			case 2:
-				cadastro_estrada();
-				break;
-			case 3:
-				buscar_centro_proximo();
-				break;
-			case 4: 
-				cadastro_pokemon();
-				break;
-			case 5:
-				remover_pokemon();
-				break;
-			case 6:
-				listar_pokemon_nome();
-				break;
-			case 7:
-				listar_pokemon_tipo();
-				break;
-			case 8:
-				contar_pokemon();
-				break;
-			case 9:
-				encontrar_pokemon_proximo();
-				break;
-			case 10:
-				cout << "Saindo do programa..." << endl;
-				break;
-		}
-	} while (op != 10);	
-}
