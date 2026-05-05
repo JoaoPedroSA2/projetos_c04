@@ -4,12 +4,13 @@
 #include <list>
 #define INF 999999
 
-vector<cidade> cidades;
-vector<list<aresta> > grafo;
+list<aresta> grafo[100];
+cidade cidades[100];
+int total_cidades = 0;
 
-void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
+void dijkstra_centro_proximo(list<aresta> grafo[], int origem)
 {
-	int n = cidades.size(); //n vertices
+	int n = total_cidades; //n vertices
 	
 	int pai[n];
 	int distancia[n];
@@ -17,7 +18,7 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 	int atual;
 	int destino = -1;
 	
-	vector<aresta>::iterator it;
+	list<aresta>::iterator it;
 
 
 	for(int i = 0; i < n; i++)
@@ -30,8 +31,8 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 	distancia[origem] = 0;
 
 	atual = origem;
-
-	while(!visitado[atual])
+	
+	while(atual != -1 && !visitado[atual])
 	{
 		visitado[atual] = true;
 		
@@ -41,7 +42,7 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 			break;
 		}
 
-		for(it = cidades[atual].adjacentes.begin(); it != cidades[atual].adjacentes.end(); it++)
+		for(it = grafo[atual].begin(); it != grafo[atual].end(); it++)
 		{
 			int d = it->destino, p = it->peso;
 
@@ -53,6 +54,7 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 		}
 		
 		int menor_distancia = INF;
+		
 		for(int i = 0; i < n; i++)
 		{
 			if(!visitado[i] && distancia[i] < menor_distancia)
@@ -65,7 +67,13 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 	   
 	atual = destino;
 
-	vector<int> caminho;
+	list<int> caminho;
+
+	if(destino == -1)
+	{
+		cout << "Nenhum centro Pokemon encontrado!" << endl;
+		return;
+	}
 
 	while (atual != -1)
 	{
@@ -76,10 +84,15 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 	cout << "Rota:" << endl;
 	
 	// imprime origem -> destino
-	for (int i = (int)caminho.size() - 1; i >= 0; i--)
+	int contador = 0;
+
+	list<int>::reverse_iterator it_caminho;
+	
+	for (it_caminho = caminho.rbegin(); it_caminho != caminho.rend(); ++it_caminho)
 	{
-	    cout << cidades[caminho[i]].nome;
-	    if (i != 0) cout << " -> ";
+	    cout << cidades[*it_caminho].nome;
+	    if (contador < (int)caminho.size() - 1) cout << " -> ";
+	    contador++;
 	}
 	
 	cout << endl;
@@ -90,40 +103,32 @@ void dijkstra_centro_proximo(vector<cidade> cidades, int origem)
 void cadastro_cidade()
 {
 	int n;
-
+	
 	cout << "Quantas cidades deseja cadastrar?" << endl;	
-
+	
 	cin >> n;
-	cin.ignore(); // Limpa o '\n' deixado por cin >>
-
+	
 	for(int i = 0; i < n; i++)
 	{
-		cidade c;
-
 		cout << "Digite o nome da cidade: " << endl;
-		getline(cin, c.nome);
+		getline(cin >> ws, cidades[total_cidades].nome);
 		
-		c.codigo = cidades.size(); 
+		cidades[total_cidades].codigo = total_cidades++; 
 		
 		cout << "A cidade possui um centro Pokemon? (1 para sim, 0 para nao)" << endl;
-		cin >> c.possui_centro;
-		cin.ignore(); // Limpa o '\n' deixado por cin >>
-
-		cidades.push_back(c);
+		cin >> cidades[total_cidades - 1].possui_centro;
 	}
 
 	cout << "Cidades cadastradas" << endl;
-	vector<cidade>::iterator it;
-
-	for(it = cidades.begin(); it != cidades.end(); it++)
+	for(int i = 0; i < total_cidades; i++)
 	{
-		cout << "Cidade: " << it->nome << "| Codigo: " << it->codigo << "| Possui centro Pokemon: " << it->possui_centro << endl;
+		cout << "Cidade: " << cidades[i].nome << "| Codigo: " << cidades[i].codigo << "| Possui centro Pokemon: " << cidades[i].possui_centro << endl;
 	}
 }
 
 void cadastro_estrada()
 {
-	if(cidades.empty())
+	if(total_cidades == 0)
 	{
 		cout << "Nenhuma cidade cadastrada, cadastre cidades primeiro" << endl;
 		return;
@@ -141,7 +146,15 @@ void cadastro_estrada()
 		a.destino = destino;
 		a.peso = peso;
 
-		cidades[origem].adjacentes.push_back(a);
+		grafo[origem].push_back(a);
+		
+		// Adiciona na direção inversa (bidirecional)
+		aresta a_inversa;
+		a_inversa.origem = destino;
+		a_inversa.destino = origem;
+		a_inversa.peso = peso;
+		
+		grafo[destino].push_back(a_inversa);
 	}
 	
 	cout << "Cadastro concluido" << endl;  	 
@@ -155,7 +168,7 @@ void buscar_centro_proximo()
 	cout << "Digite o codigo da cidade de origem" << endl;
 	cin >> origem;
 	
-	dijkstra_centro_proximo(cidades, origem);
+	dijkstra_centro_proximo(grafo, origem);
 	
 }
 
