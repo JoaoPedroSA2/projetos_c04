@@ -7,6 +7,70 @@
 list<aresta> grafo[100];
 cidade cidades[100];
 int total_cidades = 0;
+node * root = NULL;
+
+void insert(struct node * & current, pokemon data){
+  if(current == NULL){
+    current = new struct node;
+    current->data = data;
+    current->left = NULL;
+    current->right = NULL;
+  } else if( data.nome < current->data.nome){
+    insert(current->left, data);
+  } else {
+    insert(current->right, data);
+  }
+}
+
+void show_in_order(struct node * current) {
+  if (current != NULL) {
+    if (current->left != NULL) {
+      show_in_order(current->left);
+    }
+    cout << "Nome: " << current->data.nome << " | " << " Tipo: " << current->data.tipo << " | " << " Numero: " << current->data.numero << " | " << " Localizacao: " << current->data.loc_x << "," << current->data.loc_y << endl;
+    if (current->right != NULL) {
+      show_in_order(current->right);
+    }
+  }
+  else {
+	cout << "Nenhum pokemon cadastrado!" << endl;
+  }
+}
+
+node * find_less_save_right(node * & current) {
+  if(current->left != NULL) {
+    return find_less_save_right(current->left);
+  } else {
+    node * copy = current;
+    current = current->right;
+    return copy;
+  }
+}
+
+int remove(node * & current, string data){
+  if(current == NULL){
+    return 0;
+  } else if(data == current->data.nome){
+    node * temp = current;
+    if (current->right == NULL) {
+      current = current->left;
+    } else if (current->left == NULL) {
+      current = current->right;
+    } else {
+      temp = find_less_save_right(current->right);
+      current->data.nome = temp->data.nome;
+    }
+    delete(temp);
+    return 1;
+  } else {
+    if(data < current->data.nome){
+      return remove(current->left, data);
+    } else {
+      return remove(current->right, data);
+    }
+  }
+}
+
 
 void dijkstra_centro_proximo(list<aresta> grafo[], int origem)
 {
@@ -174,17 +238,50 @@ void buscar_centro_proximo()
 
 void cadastro_pokemon()
 {
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+	pokemon infos;
+	int q;
+
+	cout << "Quantos pokemons deseja cadastrar?" << endl;
+	cin >> q;
+
+	for(int i = 0; i < q; i++)
+	{
+		cout << "Digite o nome do pokemon" << endl;
+		getline(cin >> ws, infos.nome);
+
+		cout << "Digite o tipo do pokemon" << endl;
+		getline(cin >> ws, infos.tipo);
+
+		cout << "Digite o numero do pokemon" << endl;
+		cin >> infos.numero;
+
+		cout << "Digite a localizacao do pokemon (x y)" << endl;
+		cin >> infos.loc_x >> infos.loc_y;
+
+		insert(root, infos);
+		cout << "Pokemon cadastrado" << endl;
+	}
 }
 
 void remover_pokemon()
 {
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+	string remover_pok;
+
+	cout << "Digite o nome do pokemon a ser removido" << endl;
+	getline(cin >> ws, remover_pok);
+	
+	int resultado = remove(root, remover_pok);
+	
+	if (resultado) {
+		cout << "Pokemon removido com sucesso!" << endl;
+	} else {
+		cout << "Pokemon nao encontrado!" << endl;
+	}
 }
 
 void listar_pokemon_nome()
 {
-	cout << " Funcionalidade em construcao, retornando ao menu" << endl << endl;
+	show_in_order(root);
 }
 
 void listar_pokemon_tipo()

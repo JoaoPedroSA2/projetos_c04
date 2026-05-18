@@ -20,6 +20,23 @@ struct cidade
     bool possui_centro;
 };
 
+struct pokemon
+{
+    string nome;
+    string tipo;
+    int numero;
+    int loc_x, loc_y;
+};
+
+struct node
+{
+    pokemon data;
+    struct node * left;
+    struct node * right;
+};
+
+
+
 void menu();
 
 void cadastro_cidade();
@@ -31,6 +48,7 @@ void listar_pokemon_nome();
 void listar_pokemon_tipo();
 void contar_pokemon();
 void encontrar_pokemon_proximo();
+
 
 
 #endif
