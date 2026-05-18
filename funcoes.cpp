@@ -267,15 +267,22 @@ void remover_pokemon()
 {
 	string remover_pok;
 
-	cout << "Digite o nome do pokemon a ser removido" << endl;
-	getline(cin >> ws, remover_pok);
-	
-	int resultado = remove(root, remover_pok);
-	
-	if (resultado) {
-		cout << "Pokemon removido com sucesso!" << endl;
-	} else {
-		cout << "Pokemon nao encontrado!" << endl;
+	if(root == NULL) {
+		cout << "Nenhum pokemon cadastrado!" << endl;
+		return;
+	}
+	else
+	{
+		cout << "Digite o nome do pokemon a ser removido" << endl;
+		getline(cin >> ws, remover_pok);
+		
+		int resultado = remove(root, remover_pok);
+		
+		if (resultado) {
+			cout << "Pokemon removido com sucesso!" << endl;
+		} else {
+			cout << "Pokemon nao encontrado!" << endl;
+		}
 	}
 }
 
