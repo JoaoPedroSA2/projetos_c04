@@ -66,6 +66,7 @@ int main()
 				encontrar_pokemon_proximo();
 				break;
 			case 10:
+				destruir();
 				cout << "Saindo do programa..." << endl;
 				break;
 		}
