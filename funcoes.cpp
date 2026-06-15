@@ -413,6 +413,11 @@ void contar_pokemon()
 	cont = 0;
 	percorrer_tipo(root_tipo, tipo, cont);
 
+	if(cont == 0) {
+		cout << "Nenhum pokemon do tipo " << tipo << " encontrado!" << endl;
+		return;
+	}
+
 	cout << "Quantidade de pokemons do tipo " << tipo << ": " << cont << endl;
 }
 
